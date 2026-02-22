@@ -1,18 +1,19 @@
 //  Snake on micro:bit v2 (MakeCode Python)
-//  Deadly walls + recognizable game-over melody
-//  Plays your (lowered) long melody once length > 5
-//  Shows "Hi Zhi!" only at startup (not on restarts)
+//  Deadly walls + skull on death + macabre death melody
+//  Win at length 9: play long melody and scroll "PhD! Dr. Zhi! ..."
+//  "Hi Zhi!" only appears once on boot
 //  --- Config ---
 let TICK_MS = 700
 //  Movement speed (lower = faster)
 let TEMPO_BPM = 120
 //  Tempo for your long melody
 let DEATH_TEMPO = 144
-//  Tempo for death melody (clear & recognizable)
+//  Tempo for the death melody (clear & recognizable)
+let MIN_TICK_MS = 300
+//  Do not go faster than this (cap)
 //  Your provided melody (one octave lower)
 let MELODY_STR = "A#3:2 C4:1 R:1 C4:1 R:1 C2:1 R:12 A#3:1 R:1 C4:1 R:1 C4:1 R:1 C2:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:4 C6:1 R:1 D6:1 R:1 A#5:1 R:1 G5:1 R:1 G5:4 R:1 F5:1 R:1 G5:4 R:9 C6:1 R:1 C6:1 R:1 C6:1 R:1 D6:1 R:1 D#6:1 R:1 D6:4 A#3:1 R:1 C6:1 R:1 C4:1 R:1 D#6:1 R:3 D#6:1 R:3 D#6:1 R:1 D#6:1 R:1 F6:1 R:1 D#6:1 R:1 D6:1 R:3 D6:1 R:7 C6:1 R:1 D6:1 R:1 G6:1 R:3 G6:1 R:3 D#6:1 R:1 D#6:1 R:1 F6:1 R:1 D#6:1 R:1 G6:1 R:3 G6:1 R:5 G6:1 R:1 F6:1 R:1 D#6:1 R:3 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:5 C6:1 R:1 B5:1 R:1 C6:1 R:1 D6:1 R:3 G6:1 R:3 F6:1 R:1 D#6:1 R:1 D#5:1 R:1 D#6:1 R:1 D#6:1 R:1 D#6:1 R:1 D#6:1 R:5 D#6:1 R:1 F6:1 R:1 G6:1 R:1 G#6:1 R:1 G6:1 R:11 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 B5:1 R:1 C6:1 R:1 D6:1 R:4 D#6:1 R:1 F6:1 R:1 G6:1 R:1 G6:1 R:6 F6:1 D#6:1 F6:1 D#6:1 R:6 G6:1 R:1 G#6:1 R:1 G6:1 R:1 G#6:1 R:1 G6:1 R:1 G#6:1 R:1 G6:1 R:3 C5:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:3 C6:1 R:1 D6:1 R:1 A#5:1 R:1 G5:1 R:1 G5:1 R:2 F5:1 R:1 G5:1"
 //  Recognizable, darker death melody (Dies Irae–style motif)
-//  Pattern: D4 Eb4 D4 C4  |  D4 Eb4 D4 C4  |  G3:2  (rests to breathe)
 let DEATH_MELODY = "D4:2 D#4:2 D4:2 C4:4 R:1 D4:2 D#4:2 D4:2 C4:4 R:2 G3:4"
 //  --- Game state & Types ---
 let W = 5
@@ -24,7 +25,7 @@ let dir_ = 1
 //  0=up, 1=right, 2=down, 3=left
 let growing = 0
 let alive = true
-let melody_started = false
+let won = false
 let food_blink = false
 //  for pulsing the food dot
 //  --- Helpers ---
@@ -90,38 +91,51 @@ function draw() {
 }
 
 function game_over() {
-    //  Show a brief skull and play the recognizable death melody,
-    //  then restart immediately (no "Hi Zhi!" again).
+    //  Show skull + death melody, then restart (no "Hi Zhi!" again)
     
     alive = false
-    //  Stop any long melody so the death jingle is clean
     music.stopAllSounds()
-    //  Show skull briefly while playing the melody (blocking)
     basic.showIcon(IconNames.Skull)
     music.playMelody(DEATH_MELODY, DEATH_TEMPO)
+    //  blocking so skull stays visible
     basic.pause(400)
-    //  brief linger
-    //  Clear & restart
     basic.clearScreen()
-    melody_started = false
+    reset_game()
+}
+
+function win_game() {
+    //  Length 9 reached: play long melody and scroll text, then restart
+    
+    alive = false
+    won = true
+    music.stopAllSounds()
+    //  Play your long melody in background while we scroll the text
+    control.inBackground(function _win() {
+        music.playMelody(MELODY_STR, TEMPO_BPM)
+    })
+    basic.showString("PhD! Dr. Zhi! PhD! Dr. Zhi! PhD! Dr. Zhi! PhD! Dr. Zhi!")
+    basic.showIcon(IconNames.Happy)
+    basic.pause(300)
+    basic.clearScreen()
+    music.stopAllSounds()
     reset_game()
 }
 
 function reset_game() {
     
     alive = true
-    melody_started = false
+    won = false
     dir_ = 1
     //  start heading right
     snake = [[2, 2], [1, 2], [0, 2]]
     growing = 0
     food_blink = false
+    TICK_MS = 700
+    //  reset speed each round
     place_food()
     draw()
-    TICK_MS = 700
 }
 
-//  reset speed each round
 //  --- Startup message (shown only once on boot) ---
 basic.showString("Hi Zhi!")
 //  --- Inputs (v2) ---
@@ -155,8 +169,11 @@ control.inBackground(function loop() {
                 if (nh[0] == food[0] && nh[1] == food[1]) {
                     growing += 1
                     place_food()
-                    //  speed up slightly as you grow
-                    TICK_MS = Math.trunc(TICK_MS * 0.8)
+                    //  Short happy tone on collect (very brief)
+                    music.playTone(988, music.beat(BeatFraction.Sixteenth))
+                    //  ~B5, 125 ms
+                    //  Speed up slightly, but never below 400 ms
+                    TICK_MS = Math.max(MIN_TICK_MS, Math.trunc(Math.idiv(TICK_MS * 80, 100)))
                 }
                 
                 //  Grow or pop tail
@@ -166,12 +183,9 @@ control.inBackground(function loop() {
                     _py.py_array_pop(snake)
                 }
                 
-                //  Start your long melody once when length > 9 (one-time trigger)
-                if (!melody_started && snake.length > 9) {
-                    melody_started = true
-                    control.inBackground(function _play() {
-                        music.playMelody(MELODY_STR, TEMPO_BPM)
-                    })
+                //  Win condition at length 9 (one-time trigger)
+                if (!won && snake.length >= 9) {
+                    win_game()
                 }
                 
                 //  Toggle food blink and redraw
