@@ -9,7 +9,7 @@ let TEMPO_BPM = 120
 //  Tempo for your long melody
 let DEATH_TEMPO = 144
 //  Tempo for the death melody (clear & recognizable)
-let MIN_TICK_MS = 300
+let MIN_TICK_MS = 250
 //  Do not go faster than this (cap)
 //  Your provided melody (one octave lower)
 let MELODY_STR = "A#3:2 C4:1 R:1 C4:1 R:1 C2:1 R:12 A#3:1 R:1 C4:1 R:1 C4:1 R:1 C2:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:4 C6:1 R:1 D6:1 R:1 A#5:1 R:1 G5:1 R:1 G5:4 R:1 F5:1 R:1 G5:4 R:9 C6:1 R:1 C6:1 R:1 C6:1 R:1 D6:1 R:1 D#6:1 R:1 D6:4 A#3:1 R:1 C6:1 R:1 C4:1 R:1 D#6:1 R:3 D#6:1 R:3 D#6:1 R:1 D#6:1 R:1 F6:1 R:1 D#6:1 R:1 D6:1 R:3 D6:1 R:7 C6:1 R:1 D6:1 R:1 G6:1 R:3 G6:1 R:3 D#6:1 R:1 D#6:1 R:1 F6:1 R:1 D#6:1 R:1 G6:1 R:3 G6:1 R:5 G6:1 R:1 F6:1 R:1 D#6:1 R:3 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:5 C6:1 R:1 B5:1 R:1 C6:1 R:1 D6:1 R:3 G6:1 R:3 F6:1 R:1 D#6:1 R:1 D#5:1 R:1 D#6:1 R:1 D#6:1 R:1 D#6:1 R:1 D#6:1 R:5 D#6:1 R:1 F6:1 R:1 G6:1 R:1 G#6:1 R:1 G6:1 R:11 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 B5:1 R:1 C6:1 R:1 D6:1 R:4 D#6:1 R:1 F6:1 R:1 G6:1 R:1 G6:1 R:6 F6:1 D#6:1 F6:1 D#6:1 R:6 G6:1 R:1 G#6:1 R:1 G6:1 R:1 G#6:1 R:1 G6:1 R:1 G#6:1 R:1 G6:1 R:3 C5:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:1 C6:1 R:3 C6:1 R:1 D6:1 R:1 A#5:1 R:1 G5:1 R:1 G5:1 R:2 F5:1 R:1 G5:1"
@@ -137,7 +137,7 @@ function reset_game() {
 }
 
 //  --- Startup message (shown only once on boot) ---
-basic.showString("Hi Zhi!")
+basic.showString("Zhi, control the catheter!")
 //  --- Inputs (v2) ---
 input.onButtonPressed(Button.A, function on_a() {
     turn_left()
